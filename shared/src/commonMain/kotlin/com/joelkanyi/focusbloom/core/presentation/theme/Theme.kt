@@ -66,7 +66,7 @@ internal fun FocusBloomTheme(useDarkTheme: Boolean = isSystemInDarkTheme(), cont
 
     MaterialTheme(
         colorScheme = autoColors,
-        typography = getTypography(),
+        // typography = getTypography(),
         shapes = Shapes,
         content = content
     )

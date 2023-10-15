@@ -13,18 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.joelkanyi.focusbloom.platform
 
-import app.cash.sqldelight.async.coroutines.synchronous
-import app.cash.sqldelight.db.QueryResult
-import app.cash.sqldelight.db.SqlDriver
-import app.cash.sqldelight.db.SqlSchema
-import app.cash.sqldelight.driver.native.NativeSqliteDriver
+plugins {
+    kotlin("multiplatform")
+    alias(libs.plugins.compose.multiplatform)
+}
 
-actual class DatabaseDriverFactory {
-    actual suspend fun createDriver(
-        schema: SqlSchema<QueryResult.AsyncValue<Unit>>,
-    ): SqlDriver {
-        return NativeSqliteDriver(schema.synchronous(), "bloom.db")
+kotlin {
+    js(IR) {
+        browser()
+        binaries.executable()
     }
+    sourceSets {
+        val jsMain by getting {
+            dependencies {
+                implementation(project(":shared"))
+            }
+        }
+    }
+}
+
+compose.experimental {
+    web.application {}
 }

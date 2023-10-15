@@ -21,15 +21,21 @@ import cafe.adriel.voyager.core.model.coroutineScope
 import com.joelkanyi.focusbloom.core.domain.model.Task
 import com.joelkanyi.focusbloom.core.domain.repository.settings.SettingsRepository
 import com.joelkanyi.focusbloom.core.domain.repository.tasks.TasksRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class StatisticsScreenModel(
     private val tasksRepository: TasksRepository,
     settingsRepository: SettingsRepository
 ) : ScreenModel {
+    init {
+        getTasks()
+    }
     val hourFormat = settingsRepository.getHourFormat()
         .map {
             it
@@ -64,7 +70,7 @@ class StatisticsScreenModel(
             initialValue = null
         )
 
-    val tasks = tasksRepository.getTasks()
+    /*val tasks = tasksRepository.getTasks()
         .map { tasks ->
             tasks.sortedByDescending { it.date }
                 .filter {
@@ -75,7 +81,28 @@ class StatisticsScreenModel(
             scope = coroutineScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
-        )
+        )*/
+
+    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
+    val tasks = _tasks.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
+
+    private fun getTasks() {
+        coroutineScope.launch {
+            tasksRepository.getTasks().collectLatest {
+                _tasks.update { tasks ->
+                    tasks.sortedByDescending {
+                        it.date
+                    }.filter {
+                        it.completed
+                    }
+                }
+            }
+        }
+    }
 
     fun deleteTask(task: Task) {
         coroutineScope.launch {

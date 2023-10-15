@@ -1,5 +1,7 @@
-import java.lang.String;
-
+import kotlin.Boolean;
+import kotlin.Int;
+import kotlin.Long;
+import kotlin.String;
 
 CREATE TABLE taskEntity (
     id INTEGER AS Int NOT NULL PRIMARY KEY AUTOINCREMENT,

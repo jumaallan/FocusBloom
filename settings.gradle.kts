@@ -11,4 +11,5 @@ pluginManagement {
 rootProject.name = "FocusBloom"
 include(":android")
 include(":desktop")
+include(":web")
 include(":shared")

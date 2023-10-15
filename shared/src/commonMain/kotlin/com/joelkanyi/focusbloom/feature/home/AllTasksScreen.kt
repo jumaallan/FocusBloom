@@ -61,10 +61,10 @@ class AllTasksScreen : Screen, KoinComponent {
         )
         val navigator = LocalNavigator.currentOrThrow
         val tasksState = screenModel.tasks.collectAsState().value
-        val hourFormat = screenModel.hourFormat.collectAsState().value
-        val sessionTime = screenModel.sessionTime.collectAsState().value ?: 25
-        val shortBreakTime = screenModel.shortBreakTime.collectAsState().value ?: 5
-        val longBreakTime = screenModel.longBreakTime.collectAsState().value ?: 15
+//        val hourFormat = screenModel.hourFormat.collectAsState().value
+//        val sessionTime = screenModel.sessionTime.collectAsState().value ?: 25
+//        val shortBreakTime = screenModel.shortBreakTime.collectAsState().value ?: 5
+//        val longBreakTime = screenModel.longBreakTime.collectAsState().value ?: 15
         val selectedTask = screenModel.selectedTask.collectAsState().value
         val openBottomSheet = screenModel.openBottomSheet.collectAsState().value
         val bottomSheetState = rememberModalBottomSheetState()
@@ -96,10 +96,10 @@ class AllTasksScreen : Screen, KoinComponent {
 
         AllTasksScreenContent(
             tasksState = tasksState,
-            timeFormat = hourFormat,
-            sessionTime = sessionTime,
-            shortBreakTime = shortBreakTime,
-            longBreakTime = longBreakTime,
+            timeFormat = 24,
+            sessionTime = 25,
+            shortBreakTime = 5,
+            longBreakTime = 15,
             onClickNavigateBack = {
                 navigator.pop()
             },

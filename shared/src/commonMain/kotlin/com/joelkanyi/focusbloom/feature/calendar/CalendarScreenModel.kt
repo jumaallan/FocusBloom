@@ -17,38 +17,46 @@ package com.joelkanyi.focusbloom.feature.calendar
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
+import com.joelkanyi.focusbloom.core.domain.model.Task
 import com.joelkanyi.focusbloom.core.domain.repository.settings.SettingsRepository
 import com.joelkanyi.focusbloom.core.domain.repository.tasks.TasksRepository
+import korlibs.io.async.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 class CalendarScreenModel(
-    tasksRepository: TasksRepository,
-    settingsRepository: SettingsRepository
+    private val tasksRepository: TasksRepository,
+    settingsRepository: SettingsRepository,
 ) : ScreenModel {
+    init {
+        getTasks()
+    }
+
     private val _selectedDay = MutableStateFlow(
         Clock.System.now().toLocalDateTime(
-            TimeZone.currentSystemDefault()
-        ).date
+            TimeZone.currentSystemDefault(),
+        ).date,
     )
     val selectedDay = _selectedDay.stateIn(
         scope = coroutineScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = Clock.System.now().toLocalDateTime(
-            TimeZone.currentSystemDefault()
-        ).date
+            TimeZone.currentSystemDefault(),
+        ).date,
     )
 
     fun setSelectedDay(date: kotlinx.datetime.LocalDate) {
         _selectedDay.value = date
     }
 
-    val tasks = tasksRepository.getTasks()
+    /*val tasks = tasksRepository.getTasks()
         .map { tasks ->
             tasks.sortedByDescending {
                 it.date
@@ -57,15 +65,34 @@ class CalendarScreenModel(
         .stateIn(
             scope = coroutineScope,
             started = SharingStarted.WhileSubscribed(),
-            initialValue = emptyList()
-        )
+            initialValue = emptyList(),
+        )*/
+
+    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
+    val tasks = _tasks.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
+
+    private fun getTasks() {
+        coroutineScope.launch {
+            tasksRepository.getTasks().collectLatest {
+                _tasks.update { tasks ->
+                    tasks.sortedByDescending {
+                        it.date
+                    }
+                }
+            }
+        }
+    }
 
     val hourFormat = settingsRepository.getHourFormat()
         .map { it }
         .stateIn(
             scope = coroutineScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
+            initialValue = null,
         )
 
     val sessionTime = settingsRepository.getSessionTime()
@@ -75,20 +102,20 @@ class CalendarScreenModel(
         .stateIn(
             scope = coroutineScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
+            initialValue = null,
         )
     val shortBreakTime = settingsRepository.getShortBreakTime()
         .map { it }
         .stateIn(
             scope = coroutineScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
+            initialValue = null,
         )
     val longBreakTime = settingsRepository.getLongBreakTime()
         .map { it }
         .stateIn(
             scope = coroutineScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
+            initialValue = null,
         )
 }

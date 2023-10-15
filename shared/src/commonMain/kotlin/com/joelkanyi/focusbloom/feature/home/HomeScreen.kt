@@ -88,10 +88,10 @@ fun HomeScreen() {
     )
     val tasksState = screenModel.tasks.collectAsState().value
     val username = screenModel.username.collectAsState().value ?: ""
-    val hourFormat = screenModel.hourFormat.collectAsState().value
-    val sessionTime = screenModel.sessionTime.collectAsState().value ?: 25
-    val shortBreakTime = screenModel.shortBreakTime.collectAsState().value ?: 5
-    val longBreakTime = screenModel.longBreakTime.collectAsState().value ?: 15
+//    val hourFormat = screenModel.hourFormat.collectAsState().value
+//    val sessionTime = screenModel.sessionTime.collectAsState().value ?: 25
+//    val shortBreakTime = screenModel.shortBreakTime.collectAsState().value ?: 5
+//    val longBreakTime = screenModel.longBreakTime.collectAsState().value ?: 15
     val navigator = LocalAppNavigator.currentOrThrow
     val selectedTask = screenModel.selectedTask.collectAsState().value
     val openBottomSheet = screenModel.openBottomSheet.collectAsState().value
@@ -134,10 +134,10 @@ fun HomeScreen() {
         focusTimeColor = focusColor,
         shortBreakColor = shortBreakColor,
         longBreakColor = longBreakColor,
-        hourFormat = hourFormat,
-        sessionTime = sessionTime,
-        shortBreakTime = shortBreakTime,
-        longBreakTime = longBreakTime,
+        hourFormat = 24,
+        sessionTime = 25,
+        shortBreakTime = 5,
+        longBreakTime = 15,
         username = username,
         onClickTask = {
             navigator.push(TaskProgressScreen(taskId = it.id))

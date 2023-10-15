@@ -19,8 +19,8 @@ import com.joelkanyi.focusbloom.core.domain.model.Task
 import kotlinx.coroutines.flow.Flow
 
 interface TasksRepository {
-    fun getTasks(): Flow<List<Task>>
-    fun getTask(id: Int): Flow<Task?>
+    suspend fun getTasks(): Flow<List<Task>>
+    suspend fun getTask(id: Int): Flow<Task?>
     suspend fun addTask(task: Task)
     suspend fun updateTask(task: Task)
     suspend fun deleteTask(id: Int)
@@ -32,7 +32,7 @@ interface TasksRepository {
     suspend fun updateTaskCompleted(id: Int, completed: Boolean)
     suspend fun updateCurrentSessionName(id: Int, current: String)
     suspend fun updateTaskCycleNumber(id: Int, cycle: Int)
-    fun getActiveTask(): Flow<Task?>
+    suspend fun getActiveTask(): Flow<Task?>
     suspend fun updateTaskActive(id: Int, active: Boolean)
 
     suspend fun updateAllTasksActiveStatusToInactive()

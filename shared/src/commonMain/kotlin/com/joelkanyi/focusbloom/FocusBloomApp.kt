@@ -30,11 +30,15 @@ import com.joelkanyi.focusbloom.main.MainScreen
 import com.joelkanyi.focusbloom.main.MainViewModel
 import com.joelkanyi.focusbloom.main.OnBoardingState
 import com.joelkanyi.focusbloom.platform.StatusBarColors
+import org.koin.compose.koinInject
 import org.koin.compose.rememberKoinInject
+import org.koin.core.qualifier.Qualifier
+import org.koin.core.qualifier.qualifier
 
 @Composable
-fun FocusBloomApp() {
-    val mainViewModel = rememberKoinInject<MainViewModel>()
+fun FocusBloomApp(
+    mainViewModel: MainViewModel = koinInject()
+) {
     val darkTheme = when (mainViewModel.appTheme.collectAsState().value) {
         1 -> true
         else -> false

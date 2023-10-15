@@ -16,16 +16,20 @@
 package com.joelkanyi.focusbloom.feature.home
 
 import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+// import cafe.adriel.voyager.core.model.coroutineScope
 import com.joelkanyi.focusbloom.core.domain.model.Task
 import com.joelkanyi.focusbloom.core.domain.repository.settings.SettingsRepository
 import com.joelkanyi.focusbloom.core.domain.repository.tasks.TasksRepository
 import com.joelkanyi.focusbloom.core.utils.plusDays
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope.coroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -35,52 +39,59 @@ class HomeScreenModel(
     private val tasksRepository: TasksRepository,
     settingsRepository: SettingsRepository
 ) : ScreenModel {
+    init {
+        getTasks()
+    }
     private val _openBottomSheet = MutableStateFlow(false)
     val openBottomSheet = _openBottomSheet.asStateFlow()
     fun openBottomSheet(value: Boolean) {
         _openBottomSheet.value = value
     }
 
-    val hourFormat = settingsRepository.getHourFormat()
-        .map { it ?: 24 }
-        .stateIn(
-            scope = coroutineScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = 24
-        )
+    val hourFormat = 24
+//    val hourFormat = settingsRepository.getHourFormat()
+//        .map { it ?: 24 }
+//        .stateIn(
+//            scope = coroutineScope,
+//            started = SharingStarted.WhileSubscribed(5_000),
+//            initialValue = 24
+//        )
 
-    val sessionTime = settingsRepository.getSessionTime()
-        .map {
-            it
-        }
-        .stateIn(
-            scope = coroutineScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
-        )
-    val shortBreakTime = settingsRepository.getShortBreakTime()
-        .map { it }
-        .stateIn(
-            scope = coroutineScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
-        )
-    val longBreakTime = settingsRepository.getLongBreakTime()
-        .map { it }
-        .stateIn(
-            scope = coroutineScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
-        )
+    val sessionTime = 25
+//    val sessionTime = settingsRepository.getSessionTime()
+//        .map {
+//            it
+//        }
+//        .stateIn(
+//            scope = coroutineScope,
+//            started = SharingStarted.WhileSubscribed(5_000),
+//            initialValue = null
+//        )
+    val shortBreakTime = 5
+//    val shortBreakTime = settingsRepository.getShortBreakTime()
+//        .map { it }
+//        .stateIn(
+//            scope = coroutineScope,
+//            started = SharingStarted.WhileSubscribed(5_000),
+//            initialValue = null
+//        )
+    val longBreakTime = 15
+//    val longBreakTime = settingsRepository.getLongBreakTime()
+//        .map { it }
+//        .stateIn(
+//            scope = coroutineScope,
+//            started = SharingStarted.WhileSubscribed(5_000),
+//            initialValue = null
+//        )
 
     fun deleteTask(task: Task) {
-        coroutineScope.launch {
+        CoroutineScope(coroutineContext).launch {
             tasksRepository.deleteTask(task.id)
         }
     }
 
     fun updateTask(task: Task) {
-        coroutineScope.launch {
+        CoroutineScope(coroutineContext).launch {
             tasksRepository.updateTask(task)
         }
     }
@@ -92,7 +103,7 @@ class HomeScreenModel(
     }
 
     fun pushToTomorrow(task: Task) {
-        coroutineScope.launch {
+        CoroutineScope(coroutineContext).launch {
             tasksRepository.updateTask(
                 task.copy(
                     date = task.date.plusDays(1),
@@ -103,7 +114,7 @@ class HomeScreenModel(
     }
 
     fun markAsCompleted(task: Task) {
-        coroutineScope.launch {
+        CoroutineScope(coroutineContext).launch {
             tasksRepository.updateTaskCompleted(
                 id = task.id,
                 completed = true
@@ -119,7 +130,7 @@ class HomeScreenModel(
         }
     }
 
-    val tasks = tasksRepository.getTasks()
+    /*val tasks = tasksRepository.getTasks()
         .map { tasks ->
             TasksState.Success(
                 tasks
@@ -134,12 +145,36 @@ class HomeScreenModel(
             scope = coroutineScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = TasksState.Loading
-        )
+        )*/
+
+    private val _tasks: MutableStateFlow<TasksState> = MutableStateFlow(TasksState.Loading)
+    val tasks = _tasks.stateIn(
+        scope = CoroutineScope(coroutineContext),
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = TasksState.Loading
+    )
+
+    private fun getTasks() {
+        CoroutineScope(coroutineContext).launch {
+            tasksRepository.getTasks().collectLatest { tasks ->
+                _tasks.update {
+                    TasksState.Success(
+                        tasks
+                            .sortedBy { it.start }
+                            .filter {
+                                it.date.date == Clock.System.now()
+                                    .toLocalDateTime(TimeZone.currentSystemDefault()).date // .minusDays(1)
+                            }
+                    )
+                }
+            }
+        }
+    }
 
     val username = settingsRepository.getUsername()
         .map { it }
         .stateIn(
-            scope = coroutineScope,
+            scope = CoroutineScope(coroutineContext),
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = null
         )
@@ -147,7 +182,7 @@ class HomeScreenModel(
     val shortBreakColor = settingsRepository.shortBreakColor()
         .map { it }
         .stateIn(
-            coroutineScope,
+            CoroutineScope(coroutineContext),
             started = SharingStarted.WhileSubscribed(),
             initialValue = null
         )
@@ -155,7 +190,7 @@ class HomeScreenModel(
     val longBreakColor = settingsRepository.longBreakColor()
         .map { it }
         .stateIn(
-            coroutineScope,
+            CoroutineScope(coroutineContext),
             started = SharingStarted.WhileSubscribed(),
             initialValue = null
         )
@@ -163,7 +198,7 @@ class HomeScreenModel(
     val focusColor = settingsRepository.focusColor()
         .map { it }
         .stateIn(
-            coroutineScope,
+            CoroutineScope(coroutineContext),
             started = SharingStarted.WhileSubscribed(),
             initialValue = null
         )

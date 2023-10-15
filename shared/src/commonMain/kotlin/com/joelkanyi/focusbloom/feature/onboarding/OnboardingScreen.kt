@@ -188,11 +188,11 @@ private fun PageContent(title: String, description: String, illustration: String
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
+        /*Image(
             painter = painterResource(illustration),
             contentDescription = illustration,
             modifier = Modifier.size(370.dp)
-        )
+        )*/
         Spacer(modifier = Modifier.height(32.dp))
         Text(
             modifier = Modifier.fillMaxWidth(),

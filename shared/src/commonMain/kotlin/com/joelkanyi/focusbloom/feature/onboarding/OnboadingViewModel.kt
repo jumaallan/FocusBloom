@@ -16,10 +16,13 @@
 package com.joelkanyi.focusbloom.feature.onboarding
 
 import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
 import com.joelkanyi.focusbloom.core.domain.repository.settings.SettingsRepository
 import com.joelkanyi.focusbloom.core.utils.UiEvents
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -38,10 +41,12 @@ class OnboadingViewModel(
     }
 
     fun saveUsername() {
-        coroutineScope.launch {
+        println("saveUsername")
+       // MainScope().launch {
             settingsRepository.saveUsername(username.value.trim())
-            _eventsFlow.send(UiEvents.Navigation)
-        }
+            println("saveUsername: ${username.value.trim()}")
+          //  _eventsFlow.send(UiEvents.Navigation)
+       // }
     }
 
     val typeWriterTextParts = listOf(

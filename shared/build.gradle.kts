@@ -49,6 +49,10 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
+    js(IR) {
+        browser()
+    }
+
     cocoapods {
         version = "1.0"
         summary = "Some description for a Kotlin/Native module"
@@ -76,9 +80,9 @@ kotlin {
                 api(libs.koin.core)
                 api(libs.koin.compose)
 
-                implementation(compose.material3)
-                implementation(compose.material)
-                implementation(compose.materialIconsExtended)
+                api(compose.material3)
+                api(compose.material)
+                api(compose.materialIconsExtended)
 
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
@@ -105,6 +109,7 @@ kotlin {
                 implementation(libs.koalaplot.core)
 
                 implementation(libs.korau)
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
             }
         }
 
@@ -135,12 +140,23 @@ kotlin {
                 implementation(libs.components.resources)
             }
         }
+
+        val jsMain by getting {
+            dependencies {
+                implementation("app.cash.sqldelight:web-worker-driver:2.0.0")
+                implementation(npm("@cashapp/sqldelight-sqljs-worker", "2.0.0"))
+                implementation(npm("sql.js", "1.7.0"))
+                implementation(devNpm("copy-webpack-plugin", "9.1.0"))
+            }
+        }
     }
 }
 
 sqldelight {
-    database("BloomDatabase") {
-        packageName = "com.joelkanyi.focusbloom.database"
-        sourceFolders = listOf("sqldelight")
+    databases {
+        create("BloomDatabase") {
+            packageName.set("com.joelkanyi.focusbloom.core.data.local.sqldelight")
+            generateAsync.set(true)
+        }
     }
 }
